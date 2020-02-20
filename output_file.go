@@ -80,6 +80,11 @@ func NewFileOutput(pathTemplate string, config *FileOutputConfig) *FileOutput {
 	return o
 }
 
+func IsPathExist(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
+}
+
 func getFileIndex(name string) int {
 	ext := filepath.Ext(name)
 	withoutExt := strings.TrimSuffix(name, ext)
@@ -141,6 +146,12 @@ func (o *FileOutput) filename() string {
 
 	for name, fn := range dateFileNameFuncs {
 		path = strings.Replace(path, name, fn(o), -1)
+	}
+
+	_dir := filepath.Dir(path)
+	exist := IsPathExist(_dir)
+	if !exist {
+		os.MkdirAll(_dir, os.ModePerm)
 	}
 
 	if !o.config.append {
